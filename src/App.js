@@ -1,13 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { ciudadesRecomendadas } from './data/ciudades';
 
 // Ciudades disponibles para recomendaciones
-const ciudadesRecomendadas = [
-  { id: 1, nombre: 'Madrid' },
-  { id: 2, nombre: 'Barcelona' },
-  { id: 3, nombre: 'Valencia' }
-];
 
 const App = () => {
   return (
@@ -34,6 +30,7 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   const occupancy = 1;
+  const usarCache = true;
 
   useEffect(() => {
     if (ciudadBuscada.length > 0) {
@@ -41,7 +38,7 @@ const HomePage = () => {
         ciudad.nombre.toLowerCase().includes(ciudadBuscada.toLowerCase())
       );
       setSugerencias(filtradas);
-      setMostrarSugerencias(true);
+      //setMostrarSugerencias(true);
     } else {
       setSugerencias([]);
       setMostrarSugerencias(false);
@@ -58,7 +55,7 @@ const HomePage = () => {
     setError('');
     setData([]);
     try {
-      const url = `http://localhost:8080/obtenerDisponibilidadPorCiudad?fechaEntrada=${entrada}&fechaSalida=${salida}&ciudad=${ciudadSeleccionada.nombre}&occupancy=${occupancy}`;
+      const url = `http://localhost:8080/obtenerDisponibilidadPorCiudad?fechaEntrada=${entrada}&fechaSalida=${salida}&ciudad=${ciudadSeleccionada.nombre}&occupancy=${occupancy}&cache=${usarCache}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Error al obtener disponibilidad');
       const result = await response.json();
