@@ -106,7 +106,7 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   const occupancy = 1;
-  const usarCache = true;
+  const usarCache = false;
 
   useEffect(() => {
     if (ciudadBuscada.length > 0) {
@@ -150,24 +150,30 @@ const HomePage = () => {
   };
 
   const seleccionarAlojamiento = (alojamiento) => {
-  // Guardar datos en localStorage
-    const reservationData = {
-      alojamiento, 
-      entrada, 
-      salida, 
-      occupancy,
-      ciudad: ciudadSeleccionada.nombre
-    };
-    localStorage.setItem('currentReservation', JSON.stringify(reservationData));
-    
-    // Abrir nueva pestaña
-    window.open('/quote', '_blank');
+  const reservationData = {
+    alojamiento,
+    entrada,
+    salida,
+    occupancy,
+    ciudad: ciudadSeleccionada?.nombre
+  };
+
+  // Guarda en localStorage y sessionStorage
+  localStorage.setItem('currentReservation', JSON.stringify(reservationData));
+  sessionStorage.setItem('currentReservation', JSON.stringify(reservationData));
+
+  // Construir URL con query param (ejemplo: keyOption)
+  const keyOption = alojamiento.keyOption || alojamiento.listing || ''; // lo que tengas disponible
+  const url = `/quote?keyOption=${encodeURIComponent(keyOption)}`;
+
+  // Abrir en nueva pestaña con query
+  window.open(url, '_blank');
 };
 
   return (
-    <div style={{ 
-      padding: '40px', 
-      maxWidth: '1200px', 
+    <div style={{
+      padding: '40px',
+      maxWidth: '1200px',
       margin: '0 auto',
     }}>
       <motion.div
@@ -180,15 +186,15 @@ const HomePage = () => {
           marginBottom: '40px'
         }}
       >
-        <h1 style={{ 
-          fontSize: '2.5rem', 
+        <h1 style={{
+          fontSize: '2.5rem',
           marginBottom: '10px',
           ...styles.gradientText
         }}>
           Encuentra tu alojamiento perfecto
         </h1>
-        <p style={{ 
-          fontSize: '1.1rem', 
+        <p style={{
+          fontSize: '1.1rem',
           color: 'rgba(255, 255, 255, 0.7)',
           marginBottom: '30px'
         }}>
@@ -201,15 +207,15 @@ const HomePage = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: '1fr 1fr', 
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
               gap: '20px',
               marginBottom: '20px'
             }}>
               <div>
-                <label style={{ 
-                  display: 'block', 
+                <label style={{
+                  display: 'block',
                   marginBottom: '8px',
                   fontWeight: '500'
                 }}>
@@ -225,8 +231,8 @@ const HomePage = () => {
               </div>
 
               <div>
-                <label style={{ 
-                  display: 'block', 
+                <label style={{
+                  display: 'block',
                   marginBottom: '8px',
                   fontWeight: '500'
                 }}>
@@ -243,8 +249,8 @@ const HomePage = () => {
             </div>
 
             <div style={{ marginBottom: '30px', position: 'relative' }}>
-              <label style={{ 
-                display: 'block', 
+              <label style={{
+                display: 'block',
                 marginBottom: '8px',
                 fontWeight: '500'
               }}>
@@ -259,7 +265,7 @@ const HomePage = () => {
                 placeholder="Ej: Madrid"
                 style={styles.input}
               />
-              
+
               {mostrarSugerencias && sugerencias.length > 0 && (
                 <motion.ul
                   initial={{ opacity: 0, y: -10 }}
@@ -332,7 +338,7 @@ const HomePage = () => {
         )}
 
         {error && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             style={{
@@ -361,17 +367,17 @@ const HomePage = () => {
               Volver a buscar
             </button>
 
-            <h2 style={{ 
-              fontSize: '1.8rem', 
+            <h2 style={{
+              fontSize: '1.8rem',
               margin: '30px 0 20px',
               ...styles.gradientText
             }}>
               Alojamientos disponibles en {ciudadSeleccionada.nombre}
             </h2>
-            
+
             {data.length === 0 ? (
-              <div style={{ 
-                padding: '40px', 
+              <div style={{
+                padding: '40px',
                 textAlign: 'center',
                 ...styles.glass
               }}>
@@ -402,17 +408,20 @@ const HomePage = () => {
                       }}
                       onClick={() => seleccionarAlojamiento(item)}
                     >
-                      {obtenerImagen(item.imagen)}
+                      {obtenerImagen(
+                        item.alojamiento?.imagen_id || item.imagen || null
+                      )}
                       <div style={{ padding: '20px' }}>
-                        <h3 style={{ 
-                          fontSize: '1.3rem', 
+                        {console.log('Imagen:', item.imagen, ' / aloj:', item.alojamiento?.imagen_id)}
+                        <h3 style={{
+                          fontSize: '1.3rem',
                           marginBottom: '10px',
                           fontWeight: '600'
                         }}>
                           {item.alojamiento.direccion}
                         </h3>
-                        <div style={{ 
-                          display: 'flex', 
+                        <div style={{
+                          display: 'flex',
                           alignItems: 'center',
                           marginBottom: '8px',
                           color: 'rgba(255,255,255,0.7)'
@@ -420,8 +429,8 @@ const HomePage = () => {
                           <FiMapPin size={16} style={{ marginRight: '8px' }} />
                           {item.alojamiento.ciudad}, {item.alojamiento.pais}
                         </div>
-                        <div style={{ 
-                          display: 'flex', 
+                        <div style={{
+                          display: 'flex',
                           alignItems: 'center',
                           marginBottom: '15px',
                           color: 'rgba(255,255,255,0.7)'
@@ -429,7 +438,7 @@ const HomePage = () => {
                           <FiUsers size={16} style={{ marginRight: '8px' }} />
                           {item.alojamiento.occupants} personas
                         </div>
-                        
+
                         <div style={{
                           display: 'flex',
                           justifyContent: 'space-between',
@@ -439,13 +448,13 @@ const HomePage = () => {
                           borderTop: '1px solid rgba(255,255,255,0.1)'
                         }}>
                           <div>
-                            <div style={{ 
+                            <div style={{
                               fontSize: '0.9rem',
                               color: 'rgba(255,255,255,0.6)'
                             }}>
                               Precio por noche
                             </div>
-                            <div style={{ 
+                            <div style={{
                               fontSize: '1.4rem',
                               fontWeight: '700',
                               ...styles.gradientText
@@ -478,17 +487,31 @@ const HomePage = () => {
 const QuotePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // Obtener datos primero de location.state, luego de localStorage
-  const reservationData = location.state || JSON.parse(localStorage.getItem('currentReservation') || 'null');
-  const { alojamiento, entrada, salida, occupancy } = reservationData || {};
-  
-  // Limpiar localStorage después de usar los datos
-  useEffect(() => {
-    if (!location.state && reservationData) {
-      localStorage.removeItem('currentReservation');
+  const params = new URLSearchParams(location.search);
+  const keyOption = params.get('keyOption');
+
+
+  // Obtener datos primero de location.state, luego de sessionStorage, luego de localStorage
+  let reservationData = location.state;
+
+  if (!reservationData) {
+    try {
+      const saved = sessionStorage.getItem('currentReservation') ||
+        localStorage.getItem('currentReservation');
+      reservationData = saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      console.error('Error parsing reservation data:', e);
+      reservationData = null;
     }
-  }, [location.state, reservationData]);
+  }
+
+  // Proporcionar valores por defecto si reservationData es null
+  const {
+    alojamiento = null,
+    entrada = '',
+    salida = '',
+    occupancy = 1
+  } = reservationData || {};
 
   // Estado para el formulario de confirmación
   const [confirmando, setConfirmando] = useState(false);
@@ -501,16 +524,16 @@ const QuotePage = () => {
 
   if (!alojamiento) {
     return (
-      <div style={{ 
-        padding: '40px', 
+      <div style={{
+        padding: '40px',
         textAlign: 'center',
         ...styles.glass,
         maxWidth: '600px',
         margin: '40px auto'
       }}>
         <h2 style={{ marginBottom: '20px' }}>No se encontró información del alojamiento</h2>
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           style={styles.button.secondary}
         >
           <FiHome style={{ marginRight: '8px' }} />
@@ -529,7 +552,7 @@ const QuotePage = () => {
   // Manejar cambios en los inputs del cliente
   const handleClienteChange = (e) => {
     const { name, value } = e.target;
-    setDatosCliente(prev => ({
+    setDatosCliente((prev) => ({
       ...prev,
       [name]: value
     }));
@@ -537,42 +560,48 @@ const QuotePage = () => {
 
   // Función para confirmar la reserva
   const confirmarReserva = async () => {
-    if (!datosCliente.nombre || !datosCliente.email) {
-      setErrorConfirmacion('Por favor completa todos los campos');
-      return;
-    }
-
-    setConfirmando(true);
-    setErrorConfirmacion('');
-
     try {
-      const confirmRequest = {
-        listing_id: parseInt(alojamiento.alojamiento.listing),
-        fecha_entrada: entrada,
-        fecha_salida: salida,
-        nombre_cliente: datosCliente.nombre,
-        email_cliente: datosCliente.email,
-        num_personas: occupancy,
-        precio_reserva: precioTotal
+      // Validación de campos obligatorios
+      if (!datosCliente.nombre || !datosCliente.email) {
+        throw new Error('Nombre y email son requeridos');
+      }
+
+      // Convertir fechas a formato ISO con hora (LocalDateTime)
+      const toLocalDateTime = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.toISOString().replace('Z', ''); // Remueve la Z para que no sea UTC
       };
+
+      // Preparar el payload exactamente como lo espera el backend
+      const payload = {
+        listing_id: parseInt(alojamiento.alojamiento.listing),
+        fecha_entrada: toLocalDateTime(entrada),
+        fecha_salida: toLocalDateTime(salida),
+        nombre_cliente: datosCliente.nombre.trim(),
+        email_cliente: datosCliente.email.trim(),
+        num_personas: parseInt(occupancy),
+        precio_total_cotizado: parseFloat(precioTotal.toFixed(2)) // Nota el nombre del campo
+      };
+
+      console.log('Payload enviado:', JSON.stringify(payload, null, 2));
 
       const response = await fetch('http://localhost:8080/confirm', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(confirmRequest)
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al confirmar la reserva');
+        throw new Error(errorData.message || `Error ${response.status}`);
       }
 
-      const result = await response.json();
       setConfirmacionExitosa(true);
-      
+
     } catch (err) {
+      console.error('Error en confirmación:', err);
       setErrorConfirmacion(err.message || 'Error al confirmar la reserva');
     } finally {
       setConfirmando(false);
@@ -580,9 +609,9 @@ const QuotePage = () => {
   };
 
   return (
-    <div style={{ 
-      padding: '40px', 
-      maxWidth: '1200px', 
+    <div style={{
+      padding: '40px',
+      maxWidth: '1200px',
       margin: '0 auto',
     }}>
       <motion.div
@@ -602,17 +631,17 @@ const QuotePage = () => {
           Volver atrás
         </button>
 
-        <h1 style={{ 
-          fontSize: '2.2rem', 
+        <h1 style={{
+          fontSize: '2.2rem',
           margin: '30px 0',
           ...styles.gradientText
         }}>
           Confirma tu reserva
         </h1>
-        
-        <div style={{ 
-          display: 'flex', 
-          gap: '40px', 
+
+        <div style={{
+          display: 'flex',
+          gap: '40px',
           marginBottom: '40px',
           flexDirection: 'row',
           '@media (maxWidth: 768px)': {
@@ -620,13 +649,13 @@ const QuotePage = () => {
           }
         }}>
           <div style={{ flex: 1 }}>
-            <div style={{ 
+            <div style={{
               ...styles.glass,
               padding: '25px',
               marginBottom: '25px'
             }}>
-              <h3 style={{ 
-                fontSize: '1.4rem', 
+              <h3 style={{
+                fontSize: '1.4rem',
                 marginBottom: '15px',
                 display: 'flex',
                 alignItems: 'center'
@@ -634,22 +663,22 @@ const QuotePage = () => {
                 <FiHome style={{ marginRight: '10px' }} />
                 {alojamiento.alojamiento.direccion}
               </h3>
-              <div style={{ 
+              <div style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
                 gap: '15px',
                 marginBottom: '20px'
               }}>
-                <div style={{ 
-                  display: 'flex', 
+                <div style={{
+                  display: 'flex',
                   alignItems: 'center',
                   color: 'rgba(255,255,255,0.8)'
                 }}>
                   <FiMapPin style={{ marginRight: '8px' }} />
                   {alojamiento.alojamiento.ciudad}, {alojamiento.alojamiento.pais}
                 </div>
-                <div style={{ 
-                  display: 'flex', 
+                <div style={{
+                  display: 'flex',
                   alignItems: 'center',
                   color: 'rgba(255,255,255,0.8)'
                 }}>
@@ -668,12 +697,12 @@ const QuotePage = () => {
               </div>
             </div>
 
-            <div style={{ 
+            <div style={{
               ...styles.glass,
               padding: '25px'
             }}>
-              <h3 style={{ 
-                fontSize: '1.4rem', 
+              <h3 style={{
+                fontSize: '1.4rem',
                 marginBottom: '20px',
                 display: 'flex',
                 alignItems: 'center'
@@ -681,13 +710,13 @@ const QuotePage = () => {
                 <FiCalendar style={{ marginRight: '10px' }} />
                 Detalles de tu estancia
               </h3>
-              <div style={{ 
+              <div style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
                 gap: '20px'
               }}>
                 <div>
-                  <div style={{ 
+                  <div style={{
                     fontSize: '0.9rem',
                     color: 'rgba(255,255,255,0.7)',
                     marginBottom: '5px'
@@ -699,7 +728,7 @@ const QuotePage = () => {
                   </div>
                 </div>
                 <div>
-                  <div style={{ 
+                  <div style={{
                     fontSize: '0.9rem',
                     color: 'rgba(255,255,255,0.7)',
                     marginBottom: '5px'
@@ -711,7 +740,7 @@ const QuotePage = () => {
                   </div>
                 </div>
                 <div>
-                  <div style={{ 
+                  <div style={{
                     fontSize: '0.9rem',
                     color: 'rgba(255,255,255,0.7)',
                     marginBottom: '5px'
@@ -723,7 +752,7 @@ const QuotePage = () => {
                   </div>
                 </div>
                 <div>
-                  <div style={{ 
+                  <div style={{
                     fontSize: '0.9rem',
                     color: 'rgba(255,255,255,0.7)',
                     marginBottom: '5px'
@@ -737,9 +766,9 @@ const QuotePage = () => {
               </div>
             </div>
           </div>
-          
+
           <div style={{ width: '350px' }}>
-            <div style={{ 
+            <div style={{
               ...styles.glass,
               padding: '25px',
               marginBottom: '25px'
@@ -747,12 +776,12 @@ const QuotePage = () => {
               {obtenerImagen(alojamiento.imagen, { height: '200px' })}
             </div>
 
-            <div style={{ 
+            <div style={{
               ...styles.glass,
               padding: '25px'
             }}>
-              <h3 style={{ 
-                fontSize: '1.4rem', 
+              <h3 style={{
+                fontSize: '1.4rem',
                 marginBottom: '20px',
                 display: 'flex',
                 alignItems: 'center'
@@ -760,9 +789,9 @@ const QuotePage = () => {
                 <FiDollarSign style={{ marginRight: '10px' }} />
                 Resumen de precios
               </h3>
-              
+
               <div style={{ marginBottom: '20px' }}>
-                <div style={{ 
+                <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   marginBottom: '10px'
@@ -773,8 +802,8 @@ const QuotePage = () => {
                   <span>€{precioTotal.toFixed(2)}</span>
                 </div>
               </div>
-              
-              <div style={{ 
+
+              <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 marginTop: '20px',
@@ -790,13 +819,13 @@ const QuotePage = () => {
           </div>
         </div>
 
-        <div style={{ 
+        <div style={{
           ...styles.glass,
           padding: '25px',
           marginBottom: '40px'
         }}>
-          <h3 style={{ 
-            fontSize: '1.4rem', 
+          <h3 style={{
+            fontSize: '1.4rem',
             marginBottom: '20px',
             display: 'flex',
             alignItems: 'center'
@@ -804,8 +833,8 @@ const QuotePage = () => {
             <FiCheckCircle style={{ marginRight: '10px' }} />
             Políticas de cancelación
           </h3>
-          <ul style={{ 
-            listStyleType: 'none', 
+          <ul style={{
+            listStyleType: 'none',
             padding: 0,
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
@@ -815,7 +844,7 @@ const QuotePage = () => {
             }
           }}>
             {alojamiento.politicas_cancelacion.map((p, i) => (
-              <li key={i} style={{ 
+              <li key={i} style={{
                 padding: '12px',
                 backgroundColor: 'rgba(255,255,255,0.05)',
                 borderRadius: '8px'
@@ -854,13 +883,13 @@ const QuotePage = () => {
           </div>
         ) : (
           <>
-            <div style={{ 
+            <div style={{
               ...styles.glass,
               padding: '25px',
               marginBottom: '30px'
             }}>
-              <h3 style={{ 
-                fontSize: '1.4rem', 
+              <h3 style={{
+                fontSize: '1.4rem',
                 marginBottom: '20px',
                 display: 'flex',
                 alignItems: 'center'
@@ -868,10 +897,10 @@ const QuotePage = () => {
                 <FiUsers style={{ marginRight: '10px' }} />
                 Información del cliente
               </h3>
-              
+
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ 
-                  display: 'block', 
+                <label style={{
+                  display: 'block',
                   marginBottom: '8px',
                   fontWeight: '500'
                 }}>
@@ -886,10 +915,10 @@ const QuotePage = () => {
                   placeholder="Tu nombre completo"
                 />
               </div>
-              
+
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ 
-                  display: 'block', 
+                <label style={{
+                  display: 'block',
                   marginBottom: '8px',
                   fontWeight: '500'
                 }}>
@@ -907,7 +936,7 @@ const QuotePage = () => {
             </div>
 
             {errorConfirmacion && (
-              <div style={{ 
+              <div style={{
                 padding: '15px',
                 backgroundColor: 'rgba(255, 50, 50, 0.2)',
                 border: '1px solid rgba(255, 50, 50, 0.5)',
@@ -915,7 +944,10 @@ const QuotePage = () => {
                 marginBottom: '20px',
                 textAlign: 'center'
               }}>
-                {errorConfirmacion}
+                <strong>Error:</strong> {errorConfirmacion}
+                <div style={{ marginTop: '10px', fontSize: '0.9em' }}>
+                  Por favor verifica los datos e intenta nuevamente.
+                </div>
               </div>
             )}
 
@@ -960,6 +992,8 @@ const QuotePage = () => {
 };
 
 const obtenerImagen = (url, customStyles = {}) => {
+  const validUrl = url && url.startsWith('http') ? url : null;
+
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -973,7 +1007,7 @@ const obtenerImagen = (url, customStyles = {}) => {
       }}
     >
       <img
-        src={url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'}
+        src={validUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'}
         alt="Imagen de alojamiento"
         style={{
           width: '100%',
